@@ -7,18 +7,8 @@ const os = require("os");
 const path = require("path");
 
 const args = process.argv.slice(2);
-
-function findFlag(names) {
-  for (let i = 0; i < args.length; i++) {
-    if (names.includes(args[i])) return args[i + 1];
-    for (const n of names) {
-      if (args[i].startsWith(n + "=")) return args[i].slice(n.length + 1);
-    }
-  }
-  return null;
-}
-
 const codexBin = process.env.GOBLIN_MODE_CODEX || "codex";
+const PATTERN = /goblin/i;
 
 const dump = spawnSync(codexBin, ["debug", "models"], { encoding: "utf8" });
 if (dump.error || dump.status !== 0) {
@@ -34,51 +24,47 @@ let catalog;
 try {
   catalog = JSON.parse(dump.stdout);
 } catch (e) {
-  process.stderr.write(`goblin-mode: could not parse model catalog JSON: ${e.message}\n`);
-  process.exit(1);
-}
-
-const models = Array.isArray(catalog) ? catalog : catalog.models || [];
-if (!models.length) {
-  process.stderr.write("goblin-mode: model catalog is empty\n");
-  process.exit(1);
-}
-
-const requested = findFlag(["-m", "--model"]);
-let target;
-if (requested) {
-  target = models.find((m) => (m.slug || m.id || m.name) === requested);
-  if (!target) {
-    process.stderr.write(`goblin-mode: model "${requested}" not found in codex catalog\n`);
-    process.exit(1);
-  }
-} else {
-  target =
-    models.find((m) => /goblin/i.test(m.base_instructions || "")) || models[0];
-}
-
-const original = target.base_instructions || "";
-if (!original) {
   process.stderr.write(
-    `goblin-mode: model "${target.slug}" has no base_instructions to override\n`
+    `goblin-mode: could not parse model catalog JSON: ${e.message}\n`
   );
   process.exit(1);
 }
 
-const cleaned = original
-  .split("\n")
-  .filter((line) => !/goblin/i.test(line))
-  .join("\n");
+let strippedLines = 0;
+function scrub(value) {
+  if (typeof value === "string") {
+    if (!PATTERN.test(value)) return value;
+    const kept = [];
+    for (const line of value.split("\n")) {
+      if (PATTERN.test(line)) strippedLines++;
+      else kept.push(line);
+    }
+    return kept.join("\n");
+  }
+  if (Array.isArray(value)) return value.map(scrub);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = scrub(v);
+    return out;
+  }
+  return value;
+}
 
-if (cleaned === original) {
+const sanitized = scrub(catalog);
+
+if (strippedLines === 0) {
   process.stderr.write(
-    `goblin-mode: no goblin clause found in "${target.slug}" base_instructions; launching codex unchanged\n`
+    "goblin-mode: no goblin clause found in current codex catalog; launching unchanged\n"
+  );
+} else {
+  process.stderr.write(
+    `goblin-mode: stripped ${strippedLines} line(s) mentioning goblins from the codex catalog\n`
   );
 }
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "goblin-mode-"));
-const tmpFile = path.join(tmpDir, `${target.slug}.md`);
-fs.writeFileSync(tmpFile, cleaned);
+const tmpFile = path.join(tmpDir, "catalog.json");
+fs.writeFileSync(tmpFile, JSON.stringify(sanitized));
 
 let cleanedUp = false;
 function cleanup() {
@@ -96,7 +82,7 @@ for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) {
   });
 }
 
-const codexArgs = ["-c", `model_instructions_file=${tmpFile}`, ...args];
+const codexArgs = ["-c", `model_catalog_json=${tmpFile}`, ...args];
 const child = spawn(codexBin, codexArgs, { stdio: "inherit" });
 child.on("error", (err) => {
   process.stderr.write(`goblin-mode: failed to launch codex: ${err.message}\n`);
