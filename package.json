@@ -1,0 +1,15 @@
+{
+  "name": "goblin-mode",
+  "version": "0.1.0",
+  "description": "Launch the OpenAI Codex CLI with the goblin clause stripped from its system prompt.",
+  "bin": {
+    "goblin-mode": "bin/goblin-mode.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
