@@ -1,0 +1,30 @@
+{
+  "name": "goblin-mode",
+  "version": "0.1.0",
+  "description": "Launch the OpenAI Codex CLI with the goblin clause stripped from its system prompt.",
+  "bin": {
+    "goblin-mode": "bin/goblin-mode.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sofianel5/goblin-mode.git"
+  },
+  "homepage": "https://github.com/sofianel5/goblin-mode#readme",
+  "bugs": {
+    "url": "https://github.com/sofianel5/goblin-mode/issues"
+  },
+  "keywords": [
+    "codex",
+    "openai",
+    "cli",
+    "goblin"
+  ],
+  "license": "MIT"
+}
