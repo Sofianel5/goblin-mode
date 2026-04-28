@@ -47,12 +47,6 @@ On startup it prints a one-line note to stderr telling you how many lines it str
 
 - `GOBLIN_MODE_CODEX` — path to the `codex` binary if it's not on `PATH`.
 
-## How it stays forwards-compatible
-
-- The active model isn't hardcoded — every model in the live catalog is sanitized, so new models added in future codex releases are covered automatically.
-- The scrub walks the entire catalog JSON, so both `base_instructions` and `model_messages.instructions_template` (and any new prompt-bearing string field added later) are filtered.
-- If a future codex release rewords or removes the clause, the filter strips zero lines and codex runs with its real catalog — no breakage.
-
 ## License
 
 MIT
