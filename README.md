@@ -2,8 +2,6 @@
 
 A thin launcher for the [OpenAI Codex CLI](https://www.npmjs.com/package/@openai/codex) that strips the "never talk about goblins" clause from its system prompt before handing control to `codex`.
 
-It works by dumping codex's live model catalog at startup (`codex debug models`), recursively removing any line mentioning goblins from every string in the catalog, writing the sanitized catalog to a temp file, and execing `codex -c model_catalog_json=<tmp>` with the rest of your arguments passed through unchanged.
-
 ## Requirements
 
 - Node.js 18+
