@@ -6,10 +6,25 @@
     "goblin-mode": "bin/goblin-mode.js"
   },
   "files": [
-    "bin"
+    "bin",
+    "README.md"
   ],
   "engines": {
     "node": ">=18"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sofianel5/goblin-mode.git"
+  },
+  "homepage": "https://github.com/sofianel5/goblin-mode#readme",
+  "bugs": {
+    "url": "https://github.com/sofianel5/goblin-mode/issues"
+  },
+  "keywords": [
+    "codex",
+    "openai",
+    "cli",
+    "goblin"
+  ],
   "license": "MIT"
 }
